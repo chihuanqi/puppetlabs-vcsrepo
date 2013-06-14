@@ -39,7 +39,7 @@ Puppet::Type.newtype(:vcsrepo) do
 
       case should
         when :present
-          return true unless [:absent, :purged, :held].include?(is)
+          return true unless [:present, :absent, :purged, :held].include?(is)
         when :latest
           if is == :latest
             return true
@@ -50,7 +50,7 @@ Puppet::Type.newtype(:vcsrepo) do
 		  return is == :bare
       end
     end
-
+    
     newvalue :present do
       notice "Creating repository from present"
       provider.create
@@ -73,7 +73,7 @@ Puppet::Type.newtype(:vcsrepo) do
         end
         if provider.respond_to?(:latest?)
             reference = provider.latest || provider.revision
-        else
+        els
           reference = resource.value(:revision) || provider.revision
         end
         notice "Updating to latest '#{reference}' revision"

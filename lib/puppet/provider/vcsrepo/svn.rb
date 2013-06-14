@@ -3,7 +3,7 @@ require File.join(File.dirname(__FILE__), '..', 'vcsrepo')
 Puppet::Type.type(:vcsrepo).provide(:svn, :parent => Puppet::Provider::Vcsrepo) do
   desc "Supports Subversion repositories"
 
-  optional_commands :svn      => 'svn',
+  optional_commands :svn      => 'svn-1.6',
            :svnadmin => 'svnadmin'
 
   has_features :filesystem_types, :reference_tracking, :basic_auth
@@ -73,15 +73,33 @@ Puppet::Type.type(:vcsrepo).provide(:svn, :parent => Puppet::Provider::Vcsrepo) 
     update_owner
   end
 
+  def source
+    args = buildargs.push('info')
+    at_path do
+      svn(*args)[/^URL:\s+(\w.*)$/, 1]
+    end
+  end
   private
 
   def checkout_repository(source, path, revision)
+    if File.directory?(path) && working_copy_exists? then
+        url = self.source
+        if url && source !=url && source != url+"/" then
+            at_path do
+                args = buildargs.push('switch',source)
+                svn(*args)
+            end
+        end
+    else 
+        args = buildargs.push('checkout', source, path)
+        return svn(*args)
+    end
     args = buildargs.push('checkout')
     if revision
       args.push('-r', revision)
+      args.push(source, path)
+      svn(*args)
     end
-    args.push(source, path)
-    svn(*args)
   end
 
   def create_repository(path)

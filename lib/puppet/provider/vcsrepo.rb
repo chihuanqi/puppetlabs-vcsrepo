@@ -14,6 +14,7 @@ class Puppet::Provider::Vcsrepo < Puppet::Provider
   end
 
   def path_exists?
+    puts("************* exist")
     File.directory?(@resource.value(:path))
   end
 
